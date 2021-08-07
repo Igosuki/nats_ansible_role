@@ -35,7 +35,10 @@
       systemd: enabled=yes name=nats_server.service state=started daemon_reload=yes
   rescue:
     - name: start server in shell
-      shell: nats-server -c /etc/nats/server.conf
+      shell: "(nats-server -c /etc/nats/server.conf &)"
+      become: true
+      async: 10
+      poll: 0
 
 - name: install nats-top
   get_url:
@@ -59,3 +62,4 @@
 
 - name: check nats online
   shell: nats server ping
+  become: true
