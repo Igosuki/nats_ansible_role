@@ -1,7 +1,7 @@
 Ansible NATS
 =========
 
-Installs and configures a NATS server
+Installs and configures a [NATS server](https://github.com/nats-io/nats-server)
 
 Requirements
 ------------
