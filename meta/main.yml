@@ -1,6 +1,8 @@
 galaxy_info:
   author: Guillaume Balaine
-  description: NATS server
+  description: Engineer
+  role_name: nats_ansible_role
+  namespace: igosuki
 
   license: BSD-3-Clause
 

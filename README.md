@@ -65,3 +65,11 @@ Author Information
 ------------------
 
 https://github.com/Igosuki
+
+### Contributing
+
+Build the docker image : ```docker build -t ubuntu-python-systemd:20.04 .```
+
+Install the requirements : ```pip install -r test_requirements.txt```
+
+Test : ```molecule check```

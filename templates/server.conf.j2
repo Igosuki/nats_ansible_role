@@ -32,12 +32,9 @@ cluster {
     timeout: {{ nats_auth_timeout | default('2') }}
   }
 
-  # Routes are actively solicited and connected to from this server.
-  # This Docker image has none by default, but you can pass a
-  # flag to the nats-server docker image to create one to an existing server.
   routes = [
       {% for host in groups['nats'] %}
-        nats-route://{{ hostvars[host].ansible_fqdn }}:{{ nats_cluster_port }}
+        nats-route://{{ hostvars[host].ansible_fqdn }}:{{ nats_cluster_port | default('6222') }}
       {% endfor %}
   ]
 }

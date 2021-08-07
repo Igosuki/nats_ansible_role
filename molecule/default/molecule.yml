@@ -7,8 +7,8 @@ driver:
 lint: yamllint
 platforms:
   - name: instance
-    image: docker.io/pycontribs/ubuntu:latest
-    pre_build_image: true
+    image: ubuntu-python-systemd:20.04
+    pre_build_image: True
     groups:
       - nats
 provisioner:
