@@ -1,0 +1,47 @@
+---
+
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint: yamllint
+platforms:
+  - name: instance
+    image: docker.io/pycontribs/ubuntu:latest
+    pre_build_image: true
+    groups:
+      - nats
+provisioner:
+  name: ansible
+  lint: ansible-lint
+verifier:
+  name: ansible
+scenario:
+  name: default  # optional
+  create_sequence:      # molecule create
+    - create
+    - prepare
+  check_sequence:       # molecule check
+    - destroy
+    - dependency
+    - create
+    - prepare
+    - converge
+    - check
+    - destroy
+  converge_sequence:    # molecule converge
+    - dependency
+    - create
+    - prepare
+    - converge
+  destroy_sequence:     # molecule destroy
+    - cleanup
+    - destroy
+  test_sequence:        # molecule test
+    #    - lint
+    - cleanup
+    - dependency
+    - syntax
+    - create
+    - prepare
+    - converge

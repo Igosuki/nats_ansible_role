@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include nats_ansible_role"
+      include_role:
+        name: "nats"
