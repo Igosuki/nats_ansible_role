@@ -17,7 +17,7 @@
   get_url:
     url: https://github.com/nats-io/nats-server/releases/download/v2.3.4/nats-server-v2.3.4-386.deb
     dest: /tmp/nats-server-v2.3.4-386.deb
-    checksum: sha1:f2ebe5a21fdd74bafc27ef2d24bb47b8522d99d0dff6c64e1c94670cbb7c8468
+    checksum: sha256:f2ebe5a21fdd74bafc27ef2d24bb47b8522d99d0dff6c64e1c94670cbb7c8468
 
 - name: install NATS
   tags: install_nats
@@ -40,8 +40,18 @@
   get_url:
     url: https://github.com/nats-io/nats-top/releases/download/v0.4.0/nats-top-v0.4.0-amd64.deb
     dest: /tmp/nats-top-v0.4.0-amd64.deb
-    checksum: sha1:5115e53e67191c1944bf2602fee8d2a2b063ad61cfc18fa16d1342c195ba54bf
+    checksum: sha256:5115e53e67191c1944bf2602fee8d2a2b063ad61cfc18fa16d1342c195ba54bf
 
 - name: install nats-top
   sudo: true
   apt: deb="/tmp/nats-top-v0.4.0-amd64.deb"
+
+- name: install nats-cli
+  get_url:
+    url: https://github.com/nats-io/natscli/releases/download/0.0.25/nats-0.0.25-amd64.deb
+    dest: /tmp/nats-0.0.25-amd64.deb
+    checksum: sha256:9401eefe703e5a40c17edcdf21a441fa83f26a9755975e30e39327cc1c1d42dd
+
+- name: install nats-cli
+  sudo: true
+  apt: deb="/tmp/nats-0.0.25-amd64.deb"
