@@ -1,0 +1,25 @@
+[Unit]
+Description=NATS Server
+After=network-online.target
+
+[Service]
+Type=simple
+
+User=root
+Group=root
+UMask=007
+
+ExecStart=nats-server -c /etc/nats/server.conf
+
+Restart=always
+
+WorkingDirectory=/var/nats
+
+#Environment=RUST_BACKTRACE=1
+#Environment=RUST_LOG=info
+
+# Configures the time to wait before service is stopped forcefully.
+TimeoutStopSec=300
+
+[Install]
+WantedBy=multi-user.target

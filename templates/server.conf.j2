@@ -1,0 +1,43 @@
+# Client port of 4222 on all interfaces
+port: {{ nats_client_port | default('4222') }}
+
+# HTTP monitoring port
+monitor_port: {{ nats_monitor_port | default('8222') }}
+
+debug: false
+trace: false
+logtime: true
+
+{% if nats_tls_enabled %}
+tls {
+  cert_file: "{{ nats_tls_cert_file }}"
+  key_file:  "{{ nats_tls_key_file }}"
+  ca_file:   "{{ nats_tls_ca_file }}"
+  timeout: {{ nats_tls_timeout | default('0.5') }}
+  verify: true
+}
+{% endif %}
+
+# This is for clustering multiple servers together.
+cluster {
+
+  # Route connections to be received on any interface on port 6222
+  port: {{ nats_route_port | default('6222') }}
+
+  # Routes are protected, so need to use them with --routes flag
+  # e.g. --routes=nats-route://ruser:T0pS3cr3t@otherdockerhost:6222
+  authorization {
+    user: {{ nats_auth_user | default('ruser') }}
+    password: {{ nats_auth_password | default('T0pS3cr3t') }}
+    timeout: {{ nats_auth_timeout | default('2') }}
+  }
+
+  # Routes are actively solicited and connected to from this server.
+  # This Docker image has none by default, but you can pass a
+  # flag to the nats-server docker image to create one to an existing server.
+  routes = [
+      {% for host in groups['nats'] %}
+        nats-route://{{ hostvars[host].ansible_fqdn }}:{{ nats_cluster_port }}
+      {% endfor %}
+  ]
+}

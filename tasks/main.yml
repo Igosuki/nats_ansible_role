@@ -1,2 +1,47 @@
 ---
-# tasks file for nats
+
+- name: install unzip
+  tags: install_nats
+  apt: pkg=unzip state=latest update_cache=yes
+
+#
+# Sets up a cluster of nats servers
+#
+- name: create NATS dir
+  file: path={{ nats_install_dir }} owner=nobody group=nogroup mode=0755 state=directory
+  tags: install_nats
+
+- name: fetch NATS release
+  tags: install_nats
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  get_url:
+    url: https://github.com/nats-io/nats-server/releases/download/v2.3.4/nats-server-v2.3.4-386.deb
+    dest: /tmp/nats-server-v2.3.4-386.deb
+    checksum: sha1:f2ebe5a21fdd74bafc27ef2d24bb47b8522d99d0dff6c64e1c94670cbb7c8468
+
+- name: install NATS
+  tags: install_nats
+  sudo: true
+  apt: deb="/tmp/nats-server-v2.3.4-386.deb"
+
+- name: install config file
+  template: src=server.conf.j2 dest=/etc/nats/server.conf
+  tags: install_nats
+
+- name: add server unit
+  tags: install_nats
+  template: src=nats_server.service.j2 dest=/etc/system.d/system/nats_server.service owner=root group=root
+
+- name: start nats-server
+  tags: install_nats
+  service: name=nats_server state=started enabled=yes
+
+- name: install nats-top
+  get_url:
+    url: https://github.com/nats-io/nats-top/releases/download/v0.4.0/nats-top-v0.4.0-amd64.deb
+    dest: /tmp/nats-top-v0.4.0-amd64.deb
+    checksum: sha1:5115e53e67191c1944bf2602fee8d2a2b063ad61cfc18fa16d1342c195ba54bf
+
+- name: install nats-top
+  sudo: true
+  apt: deb="/tmp/nats-top-v0.4.0-amd64.deb"
