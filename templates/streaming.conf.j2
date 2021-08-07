@@ -1,0 +1,126 @@
+streaming: {
+    cluster_id: "{{ nats_cluster_id | default('my_cluster') }}"
+    discover_prefix: "{{ nats_discover_prefix | default('_STAN.Discovery') }}"
+    store_type: "{{ nats_store_type | default('file') }}"
+    dir: "{{ nats_dir | default('/var/nats/storage') }}"
+    sd: "{{ nats_debug_logging | default('false') }}"
+    sv: "{{ nats_trace_logging | default('false') }}"
+    ns: "{% for host in groups['nats']  %}
+         {{ hostvars[host].ansible_fqdn }}:{{ nats_cluster_port | default('4222') }}
+         {%- if not loop.last %},{% endif %}
+         {% endfor %}"
+    secure: {{ nats_secure | default('true') }}
+    hb_interval: "{{ nats_heartbeat_interval | default('10s') }}"
+    hb_timeout: "{{ nats_heartbeat_timeout | default('10s') }}"
+    hb_fail_count: {{ nats_heartbeat_fail_count | default('2') }}
+    {% if nats_ft_group is defined %}
+    ft_group: "{{nats_ft_group}}"
+    {% endif %}
+    partitioning: {{ nats_partitioning | default('false') }}
+    {% if nats_windows_syslog_name is defined %}
+    syslog_name: "{{nats_windows_syslog_name}}"
+    {% endif %}
+    encrypt: {{ nats_encrypt_messages | default('true') }}
+    encryption_cipher: {{ nats_encryption_cipher | default('AES') }}
+    {% if nats_encryption_key is defined %}
+    encryption_key: "{{nats_encryption_key}}"
+    {% endif %}
+    {% if nats_credentials_file is defined %}
+    credentials: "{{nats_credentials_file}}"
+    {% endif %}
+    username: {{ nats_auth_user | default('ruser') }}
+    password: {{ nats_auth_password | default('T0pS3cr3t') }}
+    {% if nats_token is defined %}
+    token: "{{nats_token}}"
+    {% endif %}
+    {% if nats_nkey_seed_file is defined %}
+    nkey_seed_file: "{{nats_nkey_seed_file}}"
+    {% endif %}
+    replace_durable: {{ nats_replace_durable | default('true') }}
+
+    {% if nats_tls_enabled %}
+    tls {
+      cert_file: "{{ nats_tls_cert_file }}"
+      key_file:  "{{ nats_tls_key_file }}"
+      ca_file:   "{{ nats_tls_ca_file }}"
+      timeout: {{ nats_tls_timeout | default('0.5') }}
+      verify: true
+    }
+    {% endif %}
+
+    net: {{ nats_listen_on | default('0.0.0.0') }}
+
+    store_limits: {
+      max_channels: {{ nats_max_channels | default('0') }}
+      max_msgs: {{ nats_max_msgs | default('0') }}
+      max_subs: {{ nats_max_subs | default('1000') }}
+      max_bytes: {{ nats_max_bytes | default('1GB') }}
+      max_age: {{ nats_max_age | default('24h') }}
+      max_inactivity: {{ nats_max_inactivity | default('') }}
+
+      channels: {
+        for name, channel in nats_channel_overrides | dictsort
+            "{{name}}": {
+              max_msgs: {{channel.max_msgs}}
+              max_bytes: {{channel.max_bytes}}
+              max_age: "{{channel.max_age}}"
+              max_subs: {{channel.max_subs}}
+              max_inactivity: "{{channel.max_inactivity}}"
+            }
+        {% endfor -%}
+      }
+    }
+
+    cluster: {
+        node_id: "{{nats_cluster_node_id}}"
+        bootstrap: {{nats_cluster_bootstrap | default('false')}}
+        peers: [{% for host in groups['nats']  %}
+        {{ hostvars[host].nats_cluster_node_id }}
+        {%- if not loop.last %},{% endif %}
+        {% endfor %}]
+        log_path: "{{nats_cluster_log_dir | default('/var/nats/log') }}"
+        log_cache_size: {{nats_cluster_log_cache_size | default('1024') }}
+        log_snapshots: {{nats_cluster_log_snapshots | default('1') }}
+        trailing_logs: {{nats_cluster_trailing_logs | default('256') }}
+        sync: {{nats_cluster_file_sync | default('false') }}
+        proceed_on_restore_failure: {{nats_cluster_proceed_on_failure_enabled | default('false') }}
+        raft_logging: {{nats_cluster_raft_logging | default('false') }}
+        raft_heartbeat_timeout: "{{nats_cluster_raft_heartbeat_timeout | default('2s') }}"
+        raft_election_timeout: "{{nats_cluster_raft_election_timeout | default('2s') }}"
+        raft_lease_timeout: "{{nats_cluster_raft_lease_timeout | default('1s') }}"
+        raft_commit_timeout: "{{nats_cluster_raft_commit_timeout | default('100ms') }}"
+        allow_add_remove_node: "{{nats_cluster_allow_add_remove_node | default('false') }}"
+        bolt_free_list_sync: "{{nats_cluster_bolt_free_list_sync | default('false') }}"
+        bolt_free_list_map: "{{nats_cluster_bolt_free_list_map | default('false') }}"
+        nodes_connections: "{{nats_cluster_nodes_connections | default('true') }}"
+    }
+
+    file: {
+        compact: {{ nats_file_compact | default('true') }}
+        compact_frag: {{ nats_file_compact_fragmentation | default('50') }}
+        compact_interval: {{ nats_file_compact_interval | default('300') }}
+        compact_min_size: {{ nats_file_compact_min_size | default('1MB') }}
+        buffer_size: {{ nats_file_buffer_size | default('2MB') }}
+        crc: {{ nats_file_crc | default('true') }}
+        crc_poly: {{ nats_file_poly | default('3988292384') }}
+        sync: {{ nats_file_sync | default('true') }}
+        cache: {{ nats_file_cache | default('true') }}
+        {% if nats_file_slice_max_msgs is defined %}
+        slice_max_msgs: {{ nats_file_slice_max_msgs }}
+        {% endif %}
+        slice_max_bytes: {{ nats_file_slice_max_bytes | default('64MB') }}
+        {% if nats_file_slice_max_age is defined %}
+        slice_max_age: "{{ nats_file_slice_max_age }}"
+        {% endif %}
+        {% if nats_file_slice_archive_script is defined %}
+        slice_archive_script: "{{ nats_file_slice_archive_script }}"
+        {% endif %}
+        {% if nats_file_fds_limit is defined %}
+        fds_limit: "{{ nats_file_fds_limit }}"
+        {% endif %}
+        parallel_recovery: {{ nats_file_parallel_recovery | default('1') }}
+        read_buffer_size: {{ nats_file_read_buffer_size | default('2MB') }}
+        auto_sync: "{{ nats_file_auto_sync | default('2m') }}"
+    }
+}
+

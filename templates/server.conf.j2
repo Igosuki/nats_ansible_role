@@ -1,11 +1,11 @@
 # Client port of 4222 on all interfaces
 port: {{ nats_client_port | default('4222') }}
-
+net: {{ nats_listen_on | default('0.0.0.0') }}
 # HTTP monitoring port
 monitor_port: {{ nats_monitor_port | default('8222') }}
 
-debug: false
-trace: false
+debug: "{{ nats_debug_logging | default('false') }}"
+trace: "{{ nats_trace_logging | default('false') }}"
 logtime: true
 
 {% if nats_tls_enabled %}
