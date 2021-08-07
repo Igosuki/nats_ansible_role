@@ -10,6 +10,7 @@ Group=root
 UMask=007
 
 ExecStart=nats-server -c /etc/nats/server.conf
+ExecReload=nats-server -c /etc/nats/server.conf --signal reload
 
 Restart=always
 
