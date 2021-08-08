@@ -66,6 +66,7 @@ These configurations are used to define limits imposed on channels.
 - nats_max_inactivity : max time without messages before the channel is deleted
 - nats_channel_overrides : a dictionnary of channel overrides, the key is a NATS subscription expression and the value is a dict with max_msgs, max_bytes, max_age, max_subs, max_inactivity 
 
+For other missing variables, check the templates.
 
 Dependencies
 ------------
@@ -75,11 +76,7 @@ No dependencies
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+The NATS cluster will be created from hosts belonging to the 'nats' group.
 
 License
 -------
@@ -97,4 +94,4 @@ Build the docker image : ```docker build -t ubuntu-python-systemd:20.04 .```
 
 Install the requirements : ```pip install -r test_requirements.txt```
 
-Test : ```molecule check```
+Test : ```molecule --debug test```
