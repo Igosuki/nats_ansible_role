@@ -72,7 +72,7 @@
 - name: check nats online
   block:
     - name: shell exec
-      shell: nats --user={{ nats_auth_user }} --password={{ nats_auth_password }} server ping
+      shell: nats --user={{ nats_auth_user }} --password={{ nats_auth_password }} --server=nats://{{inventory_hostname}}:{{ nats_client_port | default('4222') }} server ping
       become: true
   rescue:
     - name: Print when errors
