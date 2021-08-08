@@ -9,21 +9,20 @@ User=root
 Group=root
 UMask=007
 
-ExecStart=nats-server -c /etc/nats/streaming.conf
-#-store file -dir store -clustered -cluster_id swarm -cluster_node_id node-$i \
-#                                                                            -cluster_peers node-1,node-2,node-3 \
-#                                                                            -nats_server nats://nats-cluster-node-1:4222,nats://nats-cluster-node-2:4222,nats://nats-cluster-node-3:4222
-ExecReload=nats-server -c /etc/nats/streaming.conf --signal reload
+ExecStart=nats-streaming-server -sc /etc/nats/streaming.conf -clustered -l {{ nats_streaming_server_log_file | default('/var/log/nats/nats_streaming.log') }}
+ExecReload=nats-server -sc /etc/nats/streaming.conf --sl reload
 
 Restart=always
 
-WorkingDirectory=/var/nats
-
-#Environment=RUST_BACKTRACE=1
-#Environment=RUST_LOG=info
+WorkingDirectory=/var/lib/nats
 
 # Configures the time to wait before service is stopped forcefully.
 TimeoutStopSec=300
+
+{% if nats_encryption_key_env_var is defined %}
+Environment=NATS_STREAMING_ENCRYPTION_KEY={{nats_encryption_key_env_var}}
+{% endif %}
+
 
 [Install]
 WantedBy=multi-user.target

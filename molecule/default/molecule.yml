@@ -6,7 +6,12 @@ driver:
   name: docker
 lint: yamllint
 platforms:
-  - name: instance
+  - name: node1
+    image: ubuntu-python-systemd:20.04
+    pre_build_image: True
+    groups:
+      - nats
+  - name: node2
     image: ubuntu-python-systemd:20.04
     pre_build_image: True
     groups:

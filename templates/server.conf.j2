@@ -4,9 +4,32 @@ net: {{ nats_listen_on | default('0.0.0.0') }}
 # HTTP monitoring port
 monitor_port: {{ nats_monitor_port | default('8222') }}
 
-debug: "{{ nats_debug_logging | default('false') }}"
-trace: "{{ nats_trace_logging | default('false') }}"
+{% if nats_server_name is defined %}
+server_name: {{ nats_server_name }}
+{% endif %}
+debug: {{ nats_debug_logging | default('false') }}
+trace: {{ nats_trace_logging | default('false') }}
+trace: {{ nats_trace_v_logging | default('false') }}
 logtime: true
+log_size_limit: {{ nats_log_size_limit | default('0') }}
+max_traced_msg_len: {{ nats_max_traced_msg_len | default('0') }}
+syslog: {{ nats_log_to_syslog | default('false') }}
+{% if nats_remote_syslog is defined %}
+remote_syslog: {{ nats_remote_syslog }}
+{% endif %}
+pid_file: /var/run/nats/nats.pid
+ports_file_dir: /var/run/nats
+disable_sublist_cache: {{ nats_disable_sublist_cache | default('false') }}
+
+max_conn: {{ nats_max_conn | default('64K') }}
+max_control_line: {{ nats_max_control_line | default('4Kb') }}
+max_payload: {{ nats_max_payload | default('1Mb') }}
+max_pending: {{ nats_max_pending | default('64Mb') }}
+max_subscriptions: {{ nats_max_subscriptions | default('0') }}
+
+ping_interval: "{{ nats_ping_interval | default('2m') }}"
+ping_max: {{ nats_ping_max | default('2') }}
+write_deadline: "{{ nats_write_deadline | default('2s') }}"
 
 {% if nats_tls_enabled %}
 tls {
@@ -20,21 +43,47 @@ tls {
 
 # This is for clustering multiple servers together.
 cluster {
-
+  name: "{{ nats_cluster_id | default('my_cluster') }}"
   # Route connections to be received on any interface on port 6222
   port: {{ nats_route_port | default('6222') }}
 
   # Routes are protected, so need to use them with --routes flag
   # e.g. --routes=nats-route://ruser:T0pS3cr3t@otherdockerhost:6222
   authorization {
-    user: {{ nats_auth_user | default('ruser') }}
-    password: {{ nats_auth_password | default('T0pS3cr3t') }}
+    user: {{ nats_auth_user }}
+    password: {{ nats_auth_password }}
     timeout: {{ nats_auth_timeout | default('2') }}
   }
 
   routes = [
-      {% for host in groups['nats'] %}
-        nats-route://{{ hostvars[host].ansible_fqdn }}:{{ nats_cluster_port | default('6222') }}
-      {% endfor %}
+  {% for host in groups['nats'] %}
+    nats-route://{{ hostvars[host].ansible_fqdn }}:{{ nats_cluster_port | default('6222') }}
+  {% endfor %}
   ]
 }
+
+{% if nats_gateway_enabled is defined and nats_gateway_enabled %}
+gateway {
+}
+{% endif %}
+
+{% if nats_leafnode_enabled is defined and nats_leafnode_enabled %}
+leafnode {
+}
+{% endif %}
+
+{% if nats_mqtt_enabled is defined and nats_mqtt_enabled %}
+mqtt {
+}
+{% endif %}
+
+{% if nats_websocket_enabled is defined and nats_websocket_enabled %}
+websocket {
+}
+{% endif %}
+
+{% if nats_jst_enabled is defined and nats_jst_enabled %}
+jetstream {
+    store_dir: "{{ nats_dir | default('/var/lib/nats') }}"
+}
+{% endif %}

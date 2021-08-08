@@ -13,33 +13,25 @@
 
 - name: install NATS
   tags: install_nats
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   become: true
   apt: deb="/tmp/nats-server-v2.3.4-amd64.deb"
-
-- name: fetch NATS Streaming release
-  tags: install_nats
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-  get_url:
-    url: https://github.com/nats-io/nats-streaming-server/releases/download/v0.22.1/nats-streaming-server-v0.22.1-amd64.deb
-    dest: /tmp/nats-streaming-server-v0.22.1-amd64.deb
-    checksum: sha256:87d5d31a523cc07ab72a608dd29875a5c6da509db6e41607bd82dc33d0d837d5
-
-- name: install NATS Streaming
-  tags: install_nats
-  become: true
-  apt: deb="/tmp/nats-streaming-server-v0.22.1-amd64.deb"
 
 - name: create NATS dir
   file: path=/etc/nats owner=nobody group=nogroup mode=0755 state=directory
   tags: install_nats
 
+- name: create NATS lib dir
+  file: path=/var/lib/nats owner=nobody group=nogroup mode=0755 state=directory
+  tags: install_nats
+
+- name: create NATS log dir
+  file: path=/var/log/nats owner=nobody group=nogroup mode=0755 state=directory
+  tags: install_nats
+
 - name: install config file
   template: src=server.conf.j2 dest=/etc/nats/server.conf
   tags: install_nats
-
-- name: show config result
-  debug:
-    msg: "{{ lookup('template', './server.conf.j2') }}"
 
 - name: add server unit
   tags: install_nats
@@ -52,31 +44,7 @@
       systemd: enabled=yes name=nats_server.service state=started daemon_reload=yes
   rescue:
     - name: start server in shell
-      shell: "(nats-server -c /etc/nats/server.conf &)"
-      become: true
-      async: 10
-      poll: 0
-
-- name: install streaming config file
-  template: src=streaming.conf.j2 dest=/etc/nats/streaming.conf
-  tags: install_nats_streaming
-
-- name: show config result
-  debug:
-    msg: "{{ lookup('template', './streaming.conf.j2') }}"
-
-- name: add streaming server unit
-  tags: install_nats_streaming
-  template: src=nats_streaming.service.j2 dest=/etc/systemd/system/nats_streaming.service owner=root group=root
-
-- name: start nats-streaming-server
-  tags: install_nats_streaming
-  block:
-    - name: start systemd daemon
-      systemd: enabled=yes name=nats_streaming.service state=started daemon_reload=yes
-  rescue:
-    - name: start server in shell
-      shell: "(nats-streaming-server -c /etc/nats/streaming.conf &)"
+      shell: "(nats-server -c /etc/nats/server.conf -l /var/log/nats/nats.log &)"
       become: true
       async: 10
       poll: 0
@@ -102,5 +70,11 @@
   apt: deb="/tmp/nats-0.0.25-amd64.deb"
 
 - name: check nats online
-  shell: nats server ping
-  become: true
+  block:
+    - name: shell exec
+      shell: nats --user={{ nats_auth_user }} --password={{ nats_auth_password }} server ping
+      become: true
+  rescue:
+    - name: Print when errors
+      shell: "cat /var/log/nats/nats.log"
+
