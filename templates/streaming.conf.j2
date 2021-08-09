@@ -6,7 +6,7 @@ streaming: {
     sd: {{ nats_debug_logging | default('false') }}
     sv: {{ nats_trace_logging | default('false') }}
 {% set natsServers=[] %}
-{% for host in groups['nats']  %}
+{% for host in groups[nats_group_name]  %}
 {{ natsServers.append("nats://" + hostvars[host].ansible_fqdn + ":" + (nats_cluster_port | default('4222')))  }}
 {% endfor %}
     ns: "{{ natsServers | join(',') }}"
@@ -81,7 +81,7 @@ streaming: {
         node_id: "{{ nats_cluster_node_id }}"
         bootstrap: {{ nats_cluster_bootstrap | default('false') }}
 {% set natsClusterNodes=[] %}
-{% for host in groups['nats']  %}
+{% for host in groups[nats_group_name]  %}
 {{ natsClusterNodes.append(hostvars[host].inventory_hostname)  }}
 {% endfor %}
         peers: [{{ natsClusterNodes | join(',') }}]

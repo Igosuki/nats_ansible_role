@@ -66,6 +66,12 @@ These configurations are used to define limits imposed on channels.
 - nats_max_inactivity : max time without messages before the channel is deleted
 - nats_channel_overrides : a dictionnary of channel overrides, the key is a NATS subscription expression and the value is a dict with max_msgs, max_bytes, max_age, max_subs, max_inactivity 
 
+### Jetstream
+- nats_jst_enabled : boolean that enables the jetstream configuration 
+
+### Monitoring
+- nats_prometheus_exporter : boolean that enables running the nats prometheus exporter
+
 For other missing variables, check the templates.
 
 Dependencies

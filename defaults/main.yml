@@ -1,6 +1,8 @@
 ---
-
+nats_group_name: nats
 nats_tls_enabled: false
+nats_prometheus_exporter: true
+
 nats_cluster_node_id: "{{ inventory_hostname }}"
 nats_cluster_id: "test_cluster"
 nats_auth_user: "ruser"
@@ -8,3 +10,4 @@ nats_auth_password: "T0pS3cr3t"
 nats_encryption_key_env_var: "my_key"
 nats_jst_enabled: true
 nats_server_name: "{{ inventory_hostname }}"
+nats_monitor_port: 8222

@@ -49,7 +49,7 @@
       async: 10
       poll: 0
 
-- name: install nats-top
+- name: get nats-top
   get_url:
     url: https://github.com/nats-io/nats-top/releases/download/v0.4.0/nats-top-v0.4.0-amd64.deb
     dest: /tmp/nats-top-v0.4.0-amd64.deb
@@ -59,7 +59,7 @@
   become: true
   apt: deb="/tmp/nats-top-v0.4.0-amd64.deb"
 
-- name: install nats-cli
+- name: get nats-cli
   get_url:
     url: https://github.com/nats-io/natscli/releases/download/0.0.25/nats-0.0.25-amd64.deb
     dest: /tmp/nats-0.0.25-amd64.deb
@@ -78,3 +78,28 @@
     - name: Print when errors
       shell: "cat /var/log/nats/nats.log"
 
+- name: get nats-prometheus-exporter
+  get_url:
+    url: https://github.com/nats-io/prometheus-nats-exporter/releases/download/v0.8.0/prometheus-nats-exporter-v0.8.0-amd64.deb
+    dest: /tmp/prometheus-nats-exporter-v0.8.0-amd64.deb
+
+- name: install install nats-prometheus-exporter
+  become: true
+  apt: deb="/tmp/prometheus-nats-exporter-v0.8.0-amd64.deb"
+
+- name: add server unit
+  when: nats_prometheus_exporter
+  tags: install_nats
+  template: src=nats_prometheus_exporter.service.j2 dest=/etc/systemd/system/nats_prometheus_exporter.service owner=root group=root
+
+- name: start nats-prometheus-exporter
+  when: nats_prometheus_exporter
+  block:
+    - name: start systemd daemon
+      systemd: enabled=yes name=nats_prometheus_exporter.service state=started daemon_reload=yes
+  rescue:
+    - name: start exporter in shell
+      shell: "(prometheus-nats-exporter -varz \"http://localhost:{{nats_monitor_port}}\" &)"
+      become: true
+      async: 10
+      poll: 0

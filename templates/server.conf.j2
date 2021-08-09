@@ -56,7 +56,7 @@ cluster {
   }
 
   routes = [
-  {% for host in groups['nats'] %}
+  {% for host in groups[nats_group_name] %}
     nats-route://{{ hostvars[host].ansible_fqdn }}:{{ nats_cluster_port | default('6222') }}
   {% endfor %}
   ]
